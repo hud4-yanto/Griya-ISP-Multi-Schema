@@ -28,7 +28,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <div class="relative hidden sm:block">
+                <div class="relative hidden sm:block" id="searchWrapper">
                     <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
                     <input type="text" id="globalSearch" placeholder="Search tables, fields, types..." class="bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-indigo-500 w-64 transition-all">
                 </div>
@@ -84,6 +84,30 @@
             <!-- Dynamically rendered schema content -->
         </div>
 
+        <!-- ERD Tab Content Area (Hidden by default) -->
+        <div id="erdContent" class="hidden space-y-6">
+            <div class="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center min-h-[600px] shadow-xl">
+                <div class="w-full flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                            Entity Relationship Diagram (ERD)
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Visual representation of schema relations powered by Eraser.io</p>
+                    </div>
+                    <a href="https://app.eraser.io/workspace/3nENRjhBemtOx8RR6FfL?diagram=dUHWGuBu1zG96dLw2M7a" target="_blank" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/20">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        View on Eraser
+                    </a>
+                </div>
+                <div class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 flex justify-center p-4">
+                    <a href="https://app.eraser.io/workspace/3nENRjhBemtOx8RR6FfL?diagram=dUHWGuBu1zG96dLw2M7a" target="_blank">
+                        <img src="https://app.eraser.io/workspace/3nENRjhBemtOx8RR6FfL/preview?diagram=dUHWGuBu1zG96dLw2M7a&type=embed" alt="Eraser ERD Diagram" class="max-w-full h-auto rounded-xl hover:opacity-95 transition-opacity" />
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Footer -->
@@ -114,7 +138,7 @@
                     <div id="modalFieldsList" class="space-y-2"></div>
                 </div>
                 <div>
-                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Relations & References</h4>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Relations & References (Foreign Keys)</h4>
                     <div id="modalRelationsList" class="space-y-2"></div>
                 </div>
             </div>
@@ -122,7 +146,7 @@
     </div>
 
     <script>
-        // Parsed database schema representation
+        // Parsed database schema representation along with explicit Foreign Key mapping (Source Table & Column -> Target Table)
         const dbData = {
             title: "Griya ISP Multi-Schema Data Model",
             notation: "chen",
@@ -182,7 +206,174 @@
                     color: "yellow",
                     description: "Inventory tracking for equipment, fiber cables, historical cable usage, modems, return batches, and QC shopping records.",
                     tablesCount: 11
+                },
+                {
+                    id: "erd",
+                    name: "ERD",
+                    icon: "git-merge",
+                    color: "indigo",
+                    description: "Entity Relationship Diagram for visual database architecture inspection.",
+                    isErd: true
                 }
+            ],
+            relations: [
+                // Company / org
+                { fromTable: "users", column: "branch_id", toTable: "branches" },
+                { fromTable: "users", column: "division_id", toTable: "divisions" },
+                { fromTable: "users", column: "sales_salary_schema_id", toTable: "sales_salary_schemas" },
+                { fromTable: "sales_salary_schema_assignments", column: "sales_salary_schema_id", toTable: "sales_salary_schemas" },
+                { fromTable: "sales_salary_schema_assignments", column: "sales_nip", toTable: "users" },
+                { fromTable: "tier_schemas", column: "sales_scheme_id", toTable: "sales_salary_schemas" },
+                { fromTable: "cashback_schemas", column: "sales_scheme_id", toTable: "sales_salary_schemas" },
+                { fromTable: "performance_schemas", column: "sales_scheme_id", toTable: "sales_salary_schemas" },
+                { fromTable: "growth_reward_schemas", column: "sales_scheme_id", toTable: "sales_salary_schemas" },
+
+                // Sales funnel
+                { fromTable: "cold_prospects", column: "branch_id", toTable: "branches" },
+                { fromTable: "cold_prospects", column: "input_by", toTable: "users" },
+                { fromTable: "cold_prospects", column: "own_by", toTable: "users" },
+                { fromTable: "cold_prospects", column: "status_id_now", toTable: "ddl_status" },
+                { fromTable: "cold_prospects", column: "status_id_awal", toTable: "ddl_status" },
+                { fromTable: "history_status", column: "cold_prospect_id", toTable: "cold_prospects" },
+                { fromTable: "history_status", column: "status_id", toTable: "ddl_status" },
+                { fromTable: "history_messages", column: "history_status_id", toTable: "history_status" },
+                { fromTable: "template_follow_ups", column: "status_id", toTable: "ddl_status" },
+                { fromTable: "formulir_urls", column: "cold_prospect_id", toTable: "cold_prospects" },
+                { fromTable: "history_formulirs", column: "url_id", toTable: "formulir_urls" },
+                { fromTable: "formulirs_one_steps", column: "prospect_id", toTable: "prospects" },
+                { fromTable: "cold_prospects_charts", column: "branch_id", toTable: "branches" },
+                { fromTable: "cold_prospects_charts", column: "karyawan_nip", toTable: "users" },
+                { fromTable: "sales_phones", column: "branch_id", toTable: "branches" },
+                { fromTable: "sales_phones", column: "sales_nip", toTable: "users" },
+
+                { fromTable: "prospects", column: "branch_id", toTable: "branches" },
+                { fromTable: "prospects", column: "cold_prospect_id", toTable: "cold_prospects" },
+                { fromTable: "prospects", column: "sales_nip", toTable: "users" },
+                { fromTable: "prospects", column: "sales_nip_head", toTable: "users" },
+                { fromTable: "prospects", column: "sales_nip_survey", toTable: "users" },
+                { fromTable: "prospects", column: "sales_phones_id", toTable: "sales_phones" },
+                { fromTable: "prospects", column: "service_packages_id", toTable: "service_packages" },
+                { fromTable: "prospects", column: "metodes_id", toTable: "metodes" },
+                { fromTable: "prospects", column: "reason_use_id", toTable: "reason_uses" },
+                { fromTable: "prospects", column: "status_lokasi_id", toTable: "status_lokasi_dipasangs" },
+                { fromTable: "prospects", column: "coverage_areas_id", toTable: "coverage_areas" },
+                { fromTable: "prospects", column: "spliter_id", toTable: "spliters" },
+                { fromTable: "prospects_places", column: "prospect_id", toTable: "prospects" },
+                { fromTable: "prospects_points", column: "place_id", toTable: "prospects_places" },
+
+                // Coverage / network
+                { fromTable: "routers_vlans", column: "router_id", toTable: "routers" },
+                { fromTable: "olts", column: "router_id", toTable: "routers" },
+                { fromTable: "olts", column: "branch_id", toTable: "branches" },
+                { fromTable: "olts_ports", column: "olt_id", toTable: "olts" },
+                { fromTable: "olts_ports", column: "router_id", toTable: "routers" },
+                { fromTable: "olts_ports", column: "router_vlan_id", toTable: "routers_vlans" },
+                { fromTable: "coverage_areas", column: "branch_id", toTable: "branches" },
+                { fromTable: "coverage_areas", column: "olt_id", toTable: "olts" },
+                { fromTable: "coverage_areas", column: "olt_port_id", toTable: "olts_ports" },
+                { fromTable: "coverage_areas", column: "area_primary_id", toTable: "coverage_areas" },
+                { fromTable: "placements", column: "branch_id", toTable: "branches" },
+                { fromTable: "placements", column: "area_id", toTable: "coverage_areas" },
+                { fromTable: "placements", column: "tiang_id", toTable: "pole" },
+                { fromTable: "pole", column: "branch_id", toTable: "branches" },
+                { fromTable: "pole", column: "persediaan_id", toTable: "persediaans" },
+                { fromTable: "pole", column: "area_id", toTable: "coverage_areas" },
+                { fromTable: "spliters", column: "coverage_areas_id", toTable: "coverage_areas" },
+                { fromTable: "spliters", column: "coverage_areas_primary_id", toTable: "coverage_areas" },
+                { fromTable: "spliters", column: "placement_id", toTable: "placements" },
+                { fromTable: "spliters", column: "parent_id", toTable: "spliters" },
+                { fromTable: "spliters_dampings", column: "spliters_id", toTable: "spliters" },
+                { fromTable: "spliters_route", column: "spliters_id", toTable: "spliters" },
+                { fromTable: "splitter_documents", column: "wo_id", toTable: "distri_work_orders" },
+                { fromTable: "splitter_installations", column: "wo_id", toTable: "distri_work_orders" },
+
+                // Customers
+                { fromTable: "customers", column: "branch_id", toTable: "branches" },
+                { fromTable: "customers", column: "prospects_id", toTable: "prospects" },
+                { fromTable: "customers", column: "service_packages_id", toTable: "service_packages" },
+                { fromTable: "customers", column: "coverage_areas_id", toTable: "coverage_areas" },
+                { fromTable: "customers", column: "spliter_id", toTable: "spliters" },
+                { fromTable: "customers", column: "sales_nip", toTable: "users" },
+                { fromTable: "customers", column: "sales_nip_head", toTable: "users" },
+                { fromTable: "customers", column: "sales_nip_survey", toTable: "users" },
+                { fromTable: "customers", column: "sales_phones_id", toTable: "sales_phones" },
+                { fromTable: "customers", column: "cashback_receiver_id", toTable: "customer_banks" },
+                { fromTable: "customers_alamat_maps", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "customers_alamat_terpasang", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "customers_places", column: "prospect_id", toTable: "prospects" },
+                { fromTable: "customers_points", column: "place_id", toTable: "customers_places" },
+                { fromTable: "customer_document_details", column: "customer_id", toTable: "customers" },
+                { fromTable: "customer_banks", column: "customer_id", toTable: "customers" },
+                { fromTable: "customer_banks", column: "input_by", toTable: "users" },
+                { fromTable: "customer_banks", column: "inactived_by", toTable: "users" },
+                { fromTable: "customers_terminates", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "customers_terminates", column: "spliter_id", toTable: "spliters" },
+                { fromTable: "customers_terminates", column: "kategori_id", toTable: "kategori_customer_terminates" },
+                { fromTable: "history_customer_isolirs", column: "personal_id", toTable: "customers" },
+                { fromTable: "history_layanans", column: "va", toTable: "customers" },
+                { fromTable: "history_layanans", column: "from_pakets_id", toTable: "service_packages" },
+                { fromTable: "history_layanans", column: "to_pakets_id", toTable: "service_packages" },
+                { fromTable: "history_paids", column: "va", toTable: "customers" },
+                { fromTable: "history_paids", column: "messages_id", toTable: "messages" },
+                { fromTable: "recurring_billings", column: "va", toTable: "customers" },
+                { fromTable: "recurring_billings", column: "service_packages_id", toTable: "service_packages" },
+                { fromTable: "recurring_billings", column: "history_paids_id", toTable: "history_paids" },
+                { fromTable: "recuiring_billings_errors", column: "history_paids_id", toTable: "history_paids" },
+                { fromTable: "messages", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "modem_replaces", column: "pppoe_secret", toTable: "customers" },
+
+                // Operations
+                { fromTable: "psb_work_orders", column: "branch_id", toTable: "branches" },
+                { fromTable: "psb_work_orders", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "psb_work_orders", column: "team_id", toTable: "technician_teams" },
+                { fromTable: "psb_work_orders", column: "katim_nip", toTable: "users" },
+                { fromTable: "psb_work_orders", column: "helper_primary_nip", toTable: "users" },
+                { fromTable: "psb_work_orders", column: "helper_secondary_nip", toTable: "users" },
+                { fromTable: "psb_work_orders", column: "kabel_history_id", toTable: "kabel_historys" },
+                { fromTable: "psb_work_orders", column: "kabel_detail_history_id", toTable: "kabel_history_details" },
+                { fromTable: "distri_work_orders", column: "branch_id", toTable: "branches" },
+                { fromTable: "distri_work_orders", column: "spliters_id", toTable: "spliters" },
+                { fromTable: "distri_work_orders", column: "team_id", toTable: "technician_teams" },
+                { fromTable: "distri_work_orders", column: "katim_id", toTable: "users" },
+                { fromTable: "distri_spliters_route", column: "spliters_id", toTable: "spliters" },
+                { fromTable: "technician_teams", column: "branch_company_id", toTable: "branches" },
+                { fromTable: "technician_teams", column: "leader_nip", toTable: "users" },
+                { fromTable: "technician_teams", column: "support_a", toTable: "users" },
+                { fromTable: "technician_teams", column: "support_b", toTable: "users" },
+                { fromTable: "splitter_requests", column: "splitter_id", toTable: "spliters" },
+                { fromTable: "splitter_requests", column: "prospect_id", toTable: "prospects" },
+                { fromTable: "wo_dismantles", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "wo_dismantles", column: "sales_nip", toTable: "users" },
+                { fromTable: "wo_dismantles", column: "assign_by", toTable: "users" },
+                { fromTable: "wo_dismantles", column: "verification_by", toTable: "users" },
+                { fromTable: "wo_dismantle_documents", column: "wo_dismantle_number", toTable: "wo_dismantles" },
+                { fromTable: "wo_dismantle_logs", column: "wo_dismantle_number", toTable: "wo_dismantles" },
+                { fromTable: "wo_dismantle_logs", column: "change_by", toTable: "users" },
+                { fromTable: "wo_terminates", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "wo_terminates", column: "sn_modem", toTable: "modems" },
+                { fromTable: "wo_terminates", column: "created_by", toTable: "users" },
+
+                // Warehouse
+                { fromTable: "persediaans", column: "branch_id", toTable: "branches" },
+                { fromTable: "kabels", column: "branch_id", toTable: "branches" },
+                { fromTable: "kabels", column: "persediaan_id", toTable: "persediaans" },
+                { fromTable: "kabel_historys", column: "kabel_id", toTable: "kabels" },
+                { fromTable: "kabel_historys", column: "karyawan_nip", toTable: "users" },
+                { fromTable: "kabel_history_details", column: "history_kabel_id", toTable: "kabel_historys" },
+                { fromTable: "modems", column: "branch_id", toTable: "branches" },
+                { fromTable: "modems", column: "persediaan_id", toTable: "persediaans" },
+                { fromTable: "modems", column: "return_batch_id", toTable: "modem_return_batches" },
+                { fromTable: "modems", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "modems_historys", column: "sn_modem", toTable: "modems" },
+                { fromTable: "modems_historys", column: "pppoe_secret", toTable: "customers" },
+                { fromTable: "modems_historys", column: "modem_replace_id", toTable: "modem_replaces" },
+                { fromTable: "modem_return_batches", column: "branch_id", toTable: "branches" },
+                { fromTable: "modem_return_batches", column: "created_by", toTable: "users" },
+                { fromTable: "modem_return_batch_details", column: "batch_id", toTable: "modem_return_batches" },
+                { fromTable: "modem_return_batch_details", column: "sn_modem", toTable: "modems" },
+                { fromTable: "modem_must_return", column: "batch_must_id", toTable: "modem_return_batches" },
+                { fromTable: "modem_must_return", column: "batch_now_id", toTable: "modem_return_batches" },
+                { fromTable: "modem_must_return", column: "sn_modem", toTable: "modems" }
             ],
             tables: {
                 "griya_company": [
@@ -321,17 +512,33 @@
         }
 
         function renderContent() {
-            const container = document.getElementById("schemaContent");
-            let schemasToDisplay = [];
+            const contentContainer = document.getElementById("schemaContent");
+            const erdContainer = document.getElementById("erdContent");
+            const statsContainer = document.getElementById("statsContainer");
+            const searchWrapper = document.getElementById("searchWrapper");
 
+            if (currentActiveTab === "erd") {
+                contentContainer.classList.add("hidden");
+                erdContainer.classList.remove("hidden");
+                statsContainer.classList.add("hidden");
+                searchWrapper.classList.add("hidden");
+                lucide.createIcons();
+                return;
+            }
+
+            contentContainer.classList.remove("hidden");
+            erdContainer.classList.add("hidden");
+            statsContainer.classList.remove("hidden");
+            searchWrapper.classList.remove("hidden");
+
+            let schemasToDisplay = [];
             if (currentActiveTab === "all") {
-                schemasToDisplay = dbData.schemas.filter(s => s.id !== "all");
+                schemasToDisplay = dbData.schemas.filter(s => s.id !== "all" && !s.isErd);
             } else {
                 schemasToDisplay = dbData.schemas.filter(s => s.id === currentActiveTab);
             }
 
             let html = "";
-
             schemasToDisplay.forEach(schema => {
                 const tables = dbData.tables[schema.id] || [];
                 const filteredTables = tables.filter(t => {
@@ -376,7 +583,6 @@
                                 <div class="space-y-1.5 my-3">
                     `;
 
-                    // Preview first 4 fields
                     table.fields.slice(0, 4).forEach(field => {
                         html += `
                             <div class="flex items-center justify-between text-xs py-1 px-2 rounded-lg hover:bg-slate-800/50">
@@ -408,19 +614,35 @@
                 html += `</div></div>`;
             });
 
-            container.innerHTML = html || `<div class="text-center py-16 text-slate-500">No tables matching "${searchQuery}" found.</div>`;
+            contentContainer.innerHTML = html || `<div class="text-center py-16 text-slate-500">No tables matching "${searchQuery}" found.</div>`;
             lucide.createIcons();
         }
 
+        function findTableSchema(tableName) {
+            for (const [schemaName, tables] of Object.entries(dbData.tables)) {
+                if (tables.some(t => t.name === tableName)) {
+                    return schemaName;
+                }
+            }
+            return "unknown";
+        }
+
         function openTableModal(schemaId, tableName) {
-            const schema = dbData.schemas.find(s => s.id === schemaId);
-            const table = dbData.tables[schemaId].find(t => t.name === tableName);
+            let table = null;
+            let actualSchemaId = schemaId;
+            if (schemaId === "all") {
+                actualSchemaId = findTableSchema(tableName);
+                table = dbData.tables[actualSchemaId]?.find(t => t.name === tableName);
+            } else {
+                table = dbData.tables[schemaId].find(t => t.name === tableName);
+            }
             if (!table) return;
 
+            const schemaObj = dbData.schemas.find(s => s.id === actualSchemaId);
             document.getElementById("modalTitle").innerText = table.name;
-            document.getElementById("modalSchema").innerText = `Schema: ${schema.name}`;
+            document.getElementById("modalSchema").innerText = `Schema: ${schemaObj ? schemaObj.name : actualSchemaId}`;
             
-            const badgeClass = colorClasses[schema.color] || colorClasses.indigo;
+            const badgeClass = colorClasses[schemaObj ? schemaObj.color : 'indigo'] || colorClasses.indigo;
             document.getElementById("modalIconContainer").className = `p-2.5 rounded-xl border ${badgeClass}`;
             document.getElementById("modalIconContainer").innerHTML = `<i data-lucide="${table.icon}" class="w-6 h-6"></i>`;
 
@@ -437,18 +659,30 @@
                 </div>
             `).join('');
 
-            // Relations list
+            // Relations list with source table, column, and target table reference
             const relationsContainer = document.getElementById("modalRelationsList");
-            const foreignKeys = table.fields.filter(f => f.key === 'fk');
-            if (foreignKeys.length > 0) {
-                relationsContainer.innerHTML = foreignKeys.map(fk => `
-                    <div class="p-2.5 bg-slate-950/50 border border-slate-800/80 rounded-xl text-xs flex items-center justify-between text-slate-300">
-                        <span>Links via column <strong class="text-indigo-400 font-mono">${fk.name}</strong></span>
-                        <span class="text-slate-500 font-mono">Reference relationship in ecosystem</span>
-                    </div>
-                `).join('');
+            const tableRelations = dbData.relations.filter(r => r.fromTable === table.name);
+            
+            if (tableRelations.length > 0) {
+                relationsContainer.innerHTML = tableRelations.map(rel => {
+                    const targetSchema = findTableSchema(rel.toTable);
+                    return `
+                        <div class="p-3 bg-slate-950/50 border border-slate-800/80 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-slate-300">
+                            <div class="flex items-center gap-2 font-mono">
+                                <span class="text-white font-bold">${rel.fromTable}</span>
+                                <span class="text-slate-500">.</span>
+                                <span class="text-indigo-400 font-semibold">${rel.column}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-slate-400">
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-500"></i>
+                                <span class="text-emerald-400 font-mono font-bold">${rel.toTable}</span>
+                                <span class="text-[10px] text-slate-500 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800 uppercase">(${targetSchema})</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             } else {
-                relationsContainer.innerHTML = `<div class="text-xs text-slate-500 italic p-2">No direct foreign key constraints defined for this table in the current schema view.</div>`;
+                relationsContainer.innerHTML = `<div class="text-xs text-slate-500 italic p-2">No outgoing foreign key relations defined from this table.</div>`;
             }
 
             document.getElementById("detailModal").classList.remove("hidden");
